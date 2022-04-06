@@ -1,0 +1,101 @@
+﻿@page "/cursos"
+@inject HttpClient httpClient
+@inject ICursoService cursoService
+
+@attribute [Authorize]
+
+<h3>Cursos</h3>
+
+<div>
+    <a href="curso/create" class="btn btn-outline-secondary">Cadastrar Novo Curso</a>
+</div>
+
+<div style="float:right;width:40%;">
+    <div class="col-sm-5" style="float:left">
+        <input class="form-control" type="text" placeholder="Filtrar por curso" @bind="@SearchString" />
+    </div>
+    <div>
+        <button type="submit" class="btn btn-default btn-info" @onclick="FilterCurso">Filtrar</button>
+    </div>
+</div>
+
+<br />
+
+@if (Cursos is null)
+{
+    <img src="https://media.giphy.com/media/sSgvbe1m3n93G/giphy.gif" />
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Curso</th>
+                <th>Descrição</th>
+                <th>Preço</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var curso in Cursos)
+            {
+                <tr>
+                    <td>@curso.CursoId</td>
+                    <td>@curso.CursoNome</td>
+                    <td>@curso.Descricao</td>
+                    <td>@curso.Preco</td>
+                    <td>
+                        <a href="/curso/edit/@curso.CursoId" class="oi oi-pencil btn btn-success"></a>
+                        <a @onclick="@(() => DeletarCurso(curso.CursoId))" class="oi oi-trash btn btn-danger"></a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<Confirma @ref="confirma" Cancelar="CancelarConfirmacao" Confirmar="DeletarConfirmacao">
+    <div>Deseja realmente excluir este curso?</div>
+</Confirma>
+
+@code {
+    Confirma confirma;
+    int codigoCurso;
+
+    public IEnumerable<Curso>? Cursos { get; set; }
+
+    protected string SearchString { get; set; }
+
+    protected override async Task OnInitializedAsync()
+        => await GetCursos();
+
+    protected async Task GetCursos()
+        => Cursos = await cursoService.GetCursos();
+
+    protected async Task FilterCurso()
+    {
+        await GetCursos();
+        if (!string.IsNullOrWhiteSpace(SearchString))
+        {
+            Cursos = Cursos.Where(x => x.CursoNome.IndexOf(SearchString, StringComparison.OrdinalIgnoreCase) != -1).ToList();
+        }
+        SearchString = "";
+    }
+
+    private void DeletarCurso(int cursoId)
+    {
+        confirma.Exibir();
+        codigoCurso = cursoId;
+    }
+
+    private void CancelarConfirmacao()
+        => confirma.Ocultar();
+
+    private async Task DeletarConfirmacao()
+    {
+        await cursoService.DeleteCurso(codigoCurso);
+        confirma.Ocultar();
+        await GetCursos();
+    }
+}

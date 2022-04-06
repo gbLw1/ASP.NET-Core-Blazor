@@ -1,0 +1,33 @@
+﻿@inherits LayoutComponentBase
+
+<PageTitle>DigitalCursos.Web</PageTitle>
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <AuthorizeView>
+            <Authorized>
+                <div class="top-row px-4"
+                     style="display:flex; align-items: center; text-align: center">
+                    <span class="oi oi-person"></span>
+                    <p style="margin: 0; padding: 5px 0 0 10px ;">
+                        @(context.User.Identity.Name)
+                    </p>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="top-row px-4">
+                    <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>

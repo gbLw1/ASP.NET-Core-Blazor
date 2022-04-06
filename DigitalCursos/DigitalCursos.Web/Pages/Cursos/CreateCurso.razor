@@ -1,0 +1,34 @@
+﻿@page "/curso/create"
+@inject NavigationManager navigation
+@inject ICursoService cursoService
+
+<h2>Novo Curso</h2>
+
+<CursoForm Curso="@curso" OnValidSubmit="CriarCurso"
+           ButtonTextCancelar="Cancelar"
+           ButtonTextSubmit="Salvar">
+
+</CursoForm>
+
+@code {
+    private Curso curso = new Curso();
+
+    [CascadingParameter]
+    public Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var autenticado = await authenticationStateTask;
+        if (!autenticado.User.Identity.IsAuthenticated)
+        {
+            string returnUrl = "/curso/create";
+            navigation.NavigateTo($"identity/account/login?returnUrl={returnUrl}");
+        }
+    }
+
+    private async Task CriarCurso()
+    {
+        await cursoService.CreateCurso(curso);
+        navigation.NavigateTo("cursos");
+    }
+}

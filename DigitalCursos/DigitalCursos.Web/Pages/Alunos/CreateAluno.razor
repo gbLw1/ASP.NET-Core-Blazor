@@ -1,0 +1,34 @@
+﻿@page "/aluno/create"
+@inject NavigationManager navigation
+@inject IAlunoService alunoService
+
+<h2>Novo Aluno</h2>
+
+<AlunoForm Aluno="@aluno" OnValidSubmit="CriarAluno"
+           ButtonTextCancelar="Cancelar"
+           ButtonTextSubmit="Salvar">
+
+</AlunoForm>
+
+@code {
+    private Aluno aluno = new Aluno();
+
+    [CascadingParameter]
+    public Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var autenticado = await authenticationStateTask;
+        if (!autenticado.User.Identity.IsAuthenticated)
+        {
+            string returnUrl = "/aluno/create";
+            navigation.NavigateTo($"identity/account/login?returnUrl={returnUrl}");
+        }
+    }
+
+    private async Task CriarAluno()
+    {
+        await alunoService.CreateAluno(aluno);
+        navigation.NavigateTo("alunos");
+    }
+}

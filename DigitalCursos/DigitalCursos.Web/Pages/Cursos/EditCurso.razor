@@ -1,0 +1,40 @@
+﻿@page "/curso/edit/{cursoid:int}"
+@inject NavigationManager navigation
+@inject ICursoService cursoService
+
+<h2>Editar Curso</h2>
+
+<CursoForm Curso="@curso" OnValidSubmit="EditarCurso"
+           ButtonTextCancelar="Cancelar"
+           ButtonTextSubmit="Salvar">
+
+</CursoForm>
+
+@code {
+    private Curso curso = new Curso();
+
+    [CascadingParameter]
+    public Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    [Parameter]
+    public int cursoid { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var autenticado = await authenticationStateTask;
+        if (!autenticado.User.Identity.IsAuthenticated)
+        {
+            string returnUrl = $"/curso/edit/{cursoid}";
+            navigation.NavigateTo($"identity/account/login?returnUrl={returnUrl}");
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    => curso = await cursoService.GetCurso(cursoid);
+
+    private async Task EditarCurso()
+    {
+        await cursoService.UpdateCurso(curso);
+        navigation.NavigateTo("cursos");
+    }
+}

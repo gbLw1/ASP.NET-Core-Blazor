@@ -1,0 +1,99 @@
+﻿@page "/alunos"
+@inject HttpClient httpClient
+@inject IAlunoService alunoService
+
+@attribute [Authorize]
+
+<h3>Alunos</h3>
+
+<div>
+    <a href="aluno/create" class="btn btn-outline-secondary">Cadastrar Novo Aluno</a>
+</div>
+
+<div style="float:right;width:40%;">
+    <div class="col-sm-5" style="float:left">
+        <input class="form-control" type="text" placeholder="Filtrar por nome" @bind="@SearchString" />
+    </div>
+    <div>
+        <button type="submit" class="btn btn-default btn-info" @onclick="FilterAluno">Filtrar</button>
+    </div>
+</div>
+
+<br />
+
+@if (Alunos is null)
+{
+    <img src="https://media.giphy.com/media/sSgvbe1m3n93G/giphy.gif" />
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var aluno in Alunos)
+            {
+                <tr>
+                    <td>@aluno.AlunoId</td>
+                    <td>@aluno.Nome</td>
+                    <td>@aluno.Email</td>
+                    <td>
+                        <a href="/aluno/edit/@aluno.AlunoId" class="oi oi-pencil btn btn-success"></a>
+                        <a @onclick="@(() => DeletarAluno(aluno.AlunoId))" class="oi oi-trash btn btn-danger"></a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<Confirma @ref="confirma" Cancelar="CancelarConfirmacao" Confirmar="DeletarConfirmacao">
+    <div>Deseja realmente excluir este aluno?</div>
+</Confirma>
+
+@code {
+    Confirma confirma;
+    int codigoAluno;
+
+    public IEnumerable<Aluno>? Alunos { get; set; }
+
+    protected string SearchString { get; set; }
+
+    protected override async Task OnInitializedAsync()
+        => await GetAlunos();
+
+    protected async Task GetAlunos()
+        => Alunos = await alunoService.GetAlunos();
+
+    private void DeletarAluno(int alunoId)
+    {
+        confirma.Exibir();
+        codigoAluno = alunoId;
+    }
+
+    private void CancelarConfirmacao()
+        => confirma.Ocultar();
+
+    private async Task DeletarConfirmacao()
+    {
+        await alunoService.DeleteAluno(codigoAluno);
+        confirma.Ocultar();
+        await GetAlunos();
+    }
+
+    protected async Task FilterAluno()
+    {
+        await GetAlunos();
+        if (!string.IsNullOrWhiteSpace(SearchString))
+        {
+            Alunos = Alunos.Where(x => x.Nome.IndexOf(SearchString, StringComparison.OrdinalIgnoreCase) != -1).ToList();
+        }
+        SearchString = "";
+    }
+}

@@ -1,0 +1,24 @@
+﻿<div>
+    <img src="@ConvertImageToDisplay(@ImagemRemota)"
+         class="card-img-top imageThumbnail crop align-content-center" />
+</div>
+
+@code {
+    [Parameter]
+    public byte[] ImagemRemota { get; set; }
+
+    private string ConvertImageToDisplay(byte[] image)
+    {
+        if (image is not null)
+        {
+            var base64 = Convert.ToBase64String(image);
+            var finalStr = string.Format("data:image/jpg;base64,{0}", base64);
+            return finalStr;
+        }
+        else
+        {
+            var finalStr = "/images/semfoto.png";
+            return finalStr;
+        }
+    }
+}

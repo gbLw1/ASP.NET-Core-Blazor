@@ -1,0 +1,40 @@
+﻿@page "/aluno/edit/{alunoid:int}"
+@inject NavigationManager navigation
+@inject IAlunoService alunoService
+
+<h2>Editar Aluno</h2>
+
+<AlunoForm Aluno="@aluno" OnValidSubmit="EditarAluno"
+           ButtonTextCancelar="Cancelar"
+           ButtonTextSubmit="Salvar">
+
+</AlunoForm>
+
+@code {
+    private Aluno aluno = new Aluno();
+
+    [CascadingParameter]
+    public Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    [Parameter]
+    public int alunoid { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var autenticado = await authenticationStateTask;
+        if (!autenticado.User.Identity.IsAuthenticated)
+        {
+            string returnUrl = $"/aluno/edit/{alunoid}";
+            navigation.NavigateTo($"identity/account/login?returnUrl={returnUrl}");
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    => aluno = await alunoService.GetAluno(alunoid);
+
+    private async Task EditarAluno()
+    {
+        await alunoService.UpdateAluno(aluno);
+        navigation.NavigateTo("alunos");
+    }
+}

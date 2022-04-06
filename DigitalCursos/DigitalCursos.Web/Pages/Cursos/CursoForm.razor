@@ -1,0 +1,76 @@
+﻿@inject NavigationManager navigation
+@inject ICursoService cursoService
+
+<EditForm Model="@Curso" OnValidSubmit="@OnValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group row">
+        <label>Nome do Curso</label>
+        <div class="col-sm-4">
+            <InputText @bind-Value="Curso.CursoNome" class="form-control" />
+        </div>
+
+        <label>Descrição</label>
+        <div class="col-sm-4">
+            <InputText @bind-Value="Curso.Descricao" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <BlazorInputFile.InputFile OnChange="HandleSelection"></BlazorInputFile.InputFile>
+    </div>
+    <div class="col-2">
+        <ImagemFoto ImagemRemota="@Curso.Logo" />
+    </div>
+
+    <br />
+
+    <button class="btn btn-danger" @onclick="NavegaParaCursos">
+        @ButtonTextCancelar
+    </button>
+
+    <button type="submit" class="btn btn-success">
+        @ButtonTextSubmit
+    </button>
+</EditForm>
+
+@code {
+
+    public byte[] ImageUploaded { get; set; }
+
+    [Parameter]
+    public Curso Curso { get; set; }
+
+    [Parameter]
+    public string ButtonTextSubmit { get; set; } = "Salvar";
+
+    [Parameter]
+    public string ButtonTextCancelar { get; set; } = "Cancelar";
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+    private async Task HandleSelection(IFileListEntry[] files)
+    {
+        var file = files.FirstOrDefault();
+
+        if (file is not null)
+        {
+            var ms = new MemoryStream();
+            await file.Data.CopyToAsync(ms);
+            ImageUploaded = ms.ToArray();
+        }
+
+        if (ImageUploaded is not null)
+        {
+            Curso.Logo = ImageUploaded;
+            ImageUploaded = null;
+        }
+    }
+
+    private void NavegaParaCursos()
+    {
+        navigation.NavigateTo("cursos");
+    }
+}

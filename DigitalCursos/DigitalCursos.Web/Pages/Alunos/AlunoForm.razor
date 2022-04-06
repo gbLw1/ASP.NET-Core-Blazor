@@ -1,0 +1,149 @@
+﻿@inject NavigationManager navigation
+@inject ICursoService cursoService
+@inject IAlunoService alunoService
+
+<EditForm Model="@Aluno" OnValidSubmit="@OnValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group row">
+        <label form="nome">Nome</label>
+        <div class="col-sm-4">
+            <InputText @bind-Value="Aluno.Nome" class="form-control" />
+            <ValidationMessage For="@(() => Aluno.Nome)" />
+        </div>
+
+        <label form="nome">Sobrenome</label>
+        <div class="col-sm-4">
+            <InputText @bind-Value="Aluno.SobreNome" class="form-control" />
+            <ValidationMessage For="@(() => Aluno.SobreNome)" />
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="genero">Sexo </label>
+        <div class="col-sm-4">
+            <InputSelect @bind-Value="Aluno.Genero" class="form-control">
+                @foreach (var genero in Enum.GetValues(typeof(Genero)))
+                {
+                    <option value="@genero">@genero</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label form="email">Email: </label>
+        <div class="col-sm-4">
+            <InputText @bind-Value="Aluno.Email" class="form-control" />
+            <ValidationMessage For="@(() => Aluno.Email)" />
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label form="nascimento">Nascimento</label>
+        <div class="col-sm-4">
+            <InputDate @bind-Value="Aluno.Nascimento" class="form-control" />
+            <ValidationMessage For="@(() => Aluno.Nascimento)" />
+        </div>
+    </div>
+
+    <div class="form-group row mb-3">
+        <label for="curso">Curso: </label>
+        <div class="col-sm-4">
+            <select @onchange="CategoriaSelectionChanged" class="form-control">
+                @if (cursos != null)
+                {
+                    @foreach (var curso in cursos)
+                    {
+                        <option value="@curso.CursoId"
+                        selected="@(curso.CursoId == Aluno.CursoId ? true : false)">
+                            @curso.CursoNome
+                        </option>
+                    }
+                }
+            </select>
+        </div>
+    </div>
+    <div class="form-group row">
+        <BlazorInputFile.InputFile OnChange="HandleSelection"></BlazorInputFile.InputFile>
+    </div>
+    <div class="col-2">
+        <ImagemFoto ImagemRemota="@Aluno.Foto" />
+    </div>
+
+    <br />
+
+    <button class="btn btn-danger" @onclick="NavegaParaAlunos">
+        @ButtonTextCancelar
+    </button>
+
+    <button type="submit" class="btn btn-success">
+        @ButtonTextSubmit
+    </button>
+</EditForm>
+
+@code {
+    //Curso cursos[];
+    IEnumerable<Curso> cursos;
+
+    public byte[] ImageUploaded { get; set; }
+
+    [Parameter]
+    public Aluno Aluno { get; set; }
+
+    [Parameter]
+    public string ButtonTextSubmit { get; set; } = "Salvar";
+
+    [Parameter]
+    public string ButtonTextCancelar { get; set; } = "Cancelar";
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregaCursos();
+        if (Aluno.CursoId == 0)
+        {
+            //Aluno.CursoId = cursos[0].CursoId;
+            Aluno.CursoId = cursos.Select(p => p.CursoId).FirstOrDefault();
+        }
+    }
+
+    private async Task CarregaCursos()
+    {
+        cursos = await cursoService.GetCursos();
+    }
+
+    private void CategoriaSelectionChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value.ToString(), out int id))
+        {
+            Aluno.CursoId = id;
+        }
+    }
+
+    private async Task HandleSelection(IFileListEntry[] files)
+    {
+        var file = files.FirstOrDefault();
+
+        if (file is not null)
+        {
+            var ms = new MemoryStream();
+            await file.Data.CopyToAsync(ms);
+            ImageUploaded = ms.ToArray();
+        }
+
+        if (ImageUploaded is not null)
+        {
+            Aluno.Foto = ImageUploaded;
+            ImageUploaded = null;
+        }
+    }
+
+    private void NavegaParaAlunos()
+    {
+        navigation.NavigateTo("alunos");
+    }
+}
