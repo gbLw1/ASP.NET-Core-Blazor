@@ -1,6 +1,6 @@
 # ASP.NET Core Blazor Server
 
-  Uma simples apicação web [Blazor Server](https://docs.microsoft.com/pt-br/aspnet/core/blazor/?view=aspnetcore-6.0) que consome uma [WebAPI](https://docs.microsoft.com/pt-br/aspnet/core/web-api/?view=aspnetcore-6.0)
+  Uma simples aplicação web [Blazor Server](https://docs.microsoft.com/pt-br/aspnet/core/blazor/?view=aspnetcore-6.0) que consome uma [WebAPI](https://docs.microsoft.com/pt-br/aspnet/core/web-api/?view=aspnetcore-6.0)
 
 ## Características do projeto
   .NET SDK Version: [net7.0](https://dotnet.microsoft.com/en-us/download/dotnet/7.0)
